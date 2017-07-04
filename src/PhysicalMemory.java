@@ -12,7 +12,7 @@ public class PhysicalMemory {
 		
 		/*Inicializa o vetor com os valores zerados*/
 		for (int i = 0; i < tamanho; i++){
-			Integer in = new Integer(0);
+			Integer in = null;
 			this.pageFrames.add(in); 
 		}
 	}
@@ -24,7 +24,7 @@ public class PhysicalMemory {
 		int tamanhoArrayMemoriaFisica =  this.pageFrames.size();
 		
 		for(i = 0; i < tamanhoArrayMemoriaFisica;i++){
-			if(pageFrames.get(i) != 0){
+			if(pageFrames.get(i) != null){
 				ver++;
 			}
 		}
@@ -37,5 +37,23 @@ public class PhysicalMemory {
 		}else{
 			return false;
 		}		
+	}
+	
+	public int setValue(int valor){
+		int i ;
+		
+		for(i = 0; i < this.pageFrames.size(); i++){
+			if (this.pageFrames.get(i) == null){
+				Integer in = new Integer(valor);
+				this.pageFrames.set(i, in);
+				break;
+			}
+		}
+		
+		return i;
+	}
+	
+	public ArrayList <Integer> getPages(){
+		return this.pageFrames;
 	}
 }

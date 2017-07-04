@@ -26,6 +26,14 @@ public class VirtualMemory {
 	}
 	
 	public void setPresent(int indice, boolean pPresent) {
-		this.virtualPages.get(indice).setReferenced(pPresent);
+		this.virtualPages.get(indice).setPresent(pPresent);
+	}
+	
+	public void setFrame(int indice, int pFrame) {
+		this.virtualPages.get(indice).setFrame(pFrame);
+	}
+	
+	public ArrayList <VirtualPage> getPages(){
+		return this.virtualPages;
 	}
 }
