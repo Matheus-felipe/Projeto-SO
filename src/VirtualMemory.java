@@ -33,6 +33,10 @@ public class VirtualMemory {
 		this.virtualPages.get(indice).setFrame(pFrame);
 	}
 	
+	public void setModified(int indice, boolean pModified) {
+		this.virtualPages.get(indice).setModified(pModified);
+	}
+	
 	public ArrayList <VirtualPage> getPages(){
 		return this.virtualPages;
 	}
