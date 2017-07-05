@@ -1,10 +1,11 @@
 import java.util.ArrayList;
 
-public class MemoryManager {
+public class MemoryManager implements IClockListener {
 	private VirtualMemory virtualMemory;
 	private PhysicalMemory phMemory;
+	private int atual_time;
 	private int[] HD; 
-	
+
 	public MemoryManager(VirtualMemory vp, PhysicalMemory pPH, int[] pHd){
 		this.virtualMemory = vp;
 		this.phMemory = pPH;
@@ -15,21 +16,21 @@ public class MemoryManager {
 
 		if(virtualMemory.isPresent(indice) == false){
 			System.out.println("Falta de página!!!");
-			
+
 			if(this.phMemory.isFull()){
 				System.out.print("Memória cheia, chama o algoritmo");
 				return 1;/*mudar retorno*/
 			}
-			
+
 			int valor = this.HD[indice];/*Pega valor do HD*/
-			
+
 			int f = phMemory.setValue(valor); /*Coloca valor na memória física e retorna o indice livre*/
-			
+
 			/*Troca os bits*/
 			this.virtualMemory.setReferenced(indice, true);
 			this.virtualMemory.setPresent(indice,true);
 			this.virtualMemory.setFrame(indice, f);
-			
+
 
 			return valor; /*Retorna o valor*/
 		}else{
@@ -39,26 +40,26 @@ public class MemoryManager {
 			return valor;
 		}	
 	}
-	
+
 	public void writeMemory(int indice, int valor){
-		
+
 		if(virtualMemory.isPresent(indice) == false){
 			System.out.println("Falta de página!!!");
-			
+
 			/*Verifica se memória física está cheia*/
 			if(this.phMemory.isFull()){
 				System.out.print("Memória cheia, chama o algoritmo");
 				//Quando tiver, chama 
 			}
-			
+
 			int f = phMemory.setValue(valor);
-			
-			
+
+
 			/*Troca os bits*/
 			this.virtualMemory.setReferenced(indice, true);
 			this.virtualMemory.setPresent(indice,true);
 			this.virtualMemory.setFrame(indice, f);
-			
+
 		}else{
 			int i = virtualMemory.getPages().get(indice).getFrame(); /*Valor da moldura de página que a memória tá associada*/
 			Integer in = new Integer(valor); /*Cria um novo inteiro de acordo com o valor passado*/
@@ -66,4 +67,53 @@ public class MemoryManager {
 			this.virtualMemory.setModified(indice, true); /*Altera bit modificado*/
 		}
 	}
+
+	public void WSClock(){
+
+		int tempo = 10;
+		int i = 0;
+		int value;
+		int temp;
+		boolean valid = false;
+
+		for(i = 0; i < this.virtualMemory.getPages().size();i++){
+			if(virtualMemory.getPages().get(i).isPresent() == false){
+				continue;
+			}
+
+			if(virtualMemory.getPages().get(i).isReferenced() == true){
+				virtualMemory.getPages().get(i).setReferencedTime(); /*tempo do clock*/
+			}
+
+			if(virtualMemory.getPages().get(i).isReferenced() == false && (*clock* - virtualMemory.getPages().get(i).getReferencedTime()) > tempo){
+				value = phMemory.getPages().get(virtualMemory.getPages().get(i).getFrame());
+				HD[i] = value;
+				phMemory.getPages().set(virtualMemory.getPages().get(temp).getFrame(),null);
+				break;
+			}
+
+			if(virtualMemory.getPages().get(i).isReferenced() == false && (*clock* - virtualMemory.getPages().get(i).getReferencedTime()) <= tempo){
+				temp = i;
+				valid = true;
+			}
+		}
+
+		if(valid == true){
+			HD[i] = value;
+			phMemory.getPages().set(virtualMemory.getPages().get(temp).getFrame(),null);
+			continue;
+		}
+	}
+	
+	/*Método só é chamado quando o clock bater o tempo dele e pá*/
+	
+	public void receivedEvent(int tempo){
+		/*Recebe o sinal do clock e zera os bits*/
+		for(VirtualPage vp : this.virtualMemory.getPages()){
+			vp.setReferenced(false);
+		}
+		/*Pega o tempo atual que vem do clock
+		 * */
+		this.atual_time = tempo;
+	}	
 }

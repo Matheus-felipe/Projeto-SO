@@ -2,6 +2,7 @@ public class VirtualPage {
 	private boolean referenced;
 	private boolean modified;
 	private boolean present;
+	private int referencedTime;
 	private int frame;
 	
 	public boolean isReferenced() {
@@ -27,5 +28,13 @@ public class VirtualPage {
 	}
 	public int getFrame() {
 		return this.frame;
+	}
+	
+	public void setReferencedTime(int pTime){
+		this.referencedTime = pTime;
+	}
+	
+	public int getReferencedTime(){
+		return this.referencedTime;
 	}
 }
