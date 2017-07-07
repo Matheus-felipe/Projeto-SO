@@ -6,11 +6,13 @@ public class Main {
 		VirtualMemory vm = new VirtualMemory(16);
 		PhysicalMemory ph = new PhysicalMemory(8); 
 		int[] hd = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16}; 
+		Clock c = new Clock();
 		
 		ArrayList <Integer> teste;
 		
-		MemoryManager mm = new MemoryManager(vm, ph, hd); 
-		
+		MemoryManager mm = new MemoryManager(vm, ph, hd);
+		c.addListener(mm);
+		/*
 		mm.writeMemory(4, 200);
 		mm.writeMemory(2,300);
 		mm.writeMemory(1,400);
@@ -24,6 +26,9 @@ public class Main {
 		mm.writeMemory(7, 5);
 		
 		System.out.println(ph.getPages());
+		*/
 		
+		Thread rola = new Thread(c);
+		rola.start();
 	}
 }

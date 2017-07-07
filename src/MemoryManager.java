@@ -72,36 +72,44 @@ public class MemoryManager implements IClockListener {
 
 		int tempo = 10;
 		int i = 0;
-		int value;
-		int temp;
+		int value = 0;
+		int temp = 0;
 		boolean valid = false;
-
+		boolean valid2 = false;
+		
 		for(i = 0; i < this.virtualMemory.getPages().size();i++){
 			if(virtualMemory.getPages().get(i).isPresent() == false){
 				continue;
 			}
 
 			if(virtualMemory.getPages().get(i).isReferenced() == true){
-				virtualMemory.getPages().get(i).setReferencedTime(); /*tempo do clock*/
+				virtualMemory.getPages().get(i).setReferencedTime(this.atual_time); /*tempo do clock*/
 			}
 
-			if(virtualMemory.getPages().get(i).isReferenced() == false && (*clock* - virtualMemory.getPages().get(i).getReferencedTime()) > tempo){
+			if(virtualMemory.getPages().get(i).isReferenced() == false && (this.atual_time - virtualMemory.getPages().get(i).getReferencedTime()) > tempo){
 				value = phMemory.getPages().get(virtualMemory.getPages().get(i).getFrame());
 				HD[i] = value;
-				phMemory.getPages().set(virtualMemory.getPages().get(temp).getFrame(),null);
+				phMemory.getPages().set(virtualMemory.getPages().get(i).getFrame(),null);
+				valid = false;
 				break;
 			}
 
-			if(virtualMemory.getPages().get(i).isReferenced() == false && (*clock* - virtualMemory.getPages().get(i).getReferencedTime()) <= tempo){
-				temp = i;
-				valid = true;
+			if(virtualMemory.getPages().get(i).isReferenced() == false && (this.atual_time - virtualMemory.getPages().get(i).getReferencedTime()) <= tempo){
+				
+				int idade_atual = (this.atual_time - virtualMemory.getPages().get(i).getReferencedTime());
+				int idade_temp = (this.atual_time - virtualMemory.getPages().get(temp).getReferencedTime());
+				if(idade_atual >= idade_temp){
+
+					temp = i;
+					valid = true;
+					
+				}
 			}
 		}
 
 		if(valid == true){
-			HD[i] = value;
+			HD[temp] = value;
 			phMemory.getPages().set(virtualMemory.getPages().get(temp).getFrame(),null);
-			continue;
 		}
 	}
 	
@@ -109,6 +117,8 @@ public class MemoryManager implements IClockListener {
 	
 	public void receivedEvent(int tempo){
 		/*Recebe o sinal do clock e zera os bits*/
+		
+		System.out.println("ROLA");
 		for(VirtualPage vp : this.virtualMemory.getPages()){
 			vp.setReferenced(false);
 		}
