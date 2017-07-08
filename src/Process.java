@@ -1,31 +1,51 @@
 import java.util.Random;
 
 public class Process implements Runnable{
+	private int id;
+	private int processTime;
 	private String operations;
 	private MemoryManager mm;
 
 
-	public Process(String pOperations, MemoryManager pMM){
+	public Process(String pOperations, MemoryManager pMM, int pID, int pProcessTime){
 		this.operations = pOperations;
 		this.mm = pMM;
+		this.id = pID;
+		this.processTime = pProcessTime;
 	}
 	public void run(){
-		String[] op = operations.split(",");
-		Random gerador = new Random();
+			String[] op = operations.split(",");
+			Random gerador = new Random();
 			for(int i = 0; i < op.length; i++){
 				if(op[i].charAt(2) == 'R'){
-					mm.readMemory((Character.getNumericValue(op[i].charAt(0)))); 
+					System.out.println("Processo " + this.id + " leu do endereço " + (Character.getNumericValue(op[i].charAt(0))));
+					synchronized (this.mm) {
+						mm.readMemory((Character.getNumericValue(op[i].charAt(0)))); 
+					}
 				}
 
 				if(op[i].charAt(2) == 'W'){
-					mm.writeMemory((Character.getNumericValue(op[i].charAt(0))), gerador.nextInt(10));
+					int valor = gerador.nextInt(10);
+					System.out.println("Processo "+ this.id 
+							+ " escreveu "
+							+ valor
+							+ " no endereço " 
+							+ (Character.getNumericValue(op[i].charAt(0))));
+					synchronized (this.mm) {
+						mm.writeMemory((Character.getNumericValue(op[i].charAt(0))), valor);
+					}
+					
 				}
 
 				try {
-					Thread.sleep(1000);
+					Thread.sleep(this.processTime);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
 			}
-		}
+		
+
 	}
+
+}
+

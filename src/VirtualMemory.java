@@ -42,6 +42,10 @@ public class VirtualMemory {
 		
 	}
 	
+	public void setReferencedTime(int indice, int time){
+		this.virtualPages.get(indice).setReferencedTime(time);
+	}
+	
 	public ArrayList <VirtualPage> getPages(){
 		return this.virtualPages;
 	}

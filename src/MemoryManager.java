@@ -30,6 +30,7 @@ public class MemoryManager implements IClockListener {
 			this.virtualMemory.setReferenced(indice, true);
 			this.virtualMemory.setPresent(indice,true);
 			this.virtualMemory.setFrame(indice, f);
+			this.virtualMemory.setReferencedTime(indice, this.atual_time); /*Adiciona o tempo de referenciado da página para o tempo atual*/
 
 
 			return valor; /*Retorna o valor*/
@@ -37,6 +38,7 @@ public class MemoryManager implements IClockListener {
 			int i = virtualMemory.getPages().get(indice).getFrame(); /*Pega a posição da moldura de página associada à página virtual*/
 			int valor = phMemory.getPages().get(i); /*Guarda o valor que está nessa moldura*/
 			this.virtualMemory.setReferenced(indice, true); /*Muda o bit de referenciado da página do indice passado*/
+			this.virtualMemory.setReferencedTime(indice, this.atual_time);
 			return valor;
 		}	
 	}
@@ -55,16 +57,20 @@ public class MemoryManager implements IClockListener {
 			int f = phMemory.setValue(valor);
 
 
-			/*Troca os bits*/
+			/*Troca os valores da memória física*/
 			this.virtualMemory.setReferenced(indice, true);
 			this.virtualMemory.setPresent(indice,true);
 			this.virtualMemory.setFrame(indice, f);
+			this.virtualMemory.setReferencedTime(indice, this.atual_time);
+			this.virtualMemory.setModified(indice, true);
 
 		}else{
 			int i = virtualMemory.getPages().get(indice).getFrame(); /*Valor da moldura de página que a memória tá associada*/
 			Integer in = new Integer(valor); /*Cria um novo inteiro de acordo com o valor passado*/
 			phMemory.getPages().set(i, in);/*Altera valor do array de memória física */
+			this.virtualMemory.setReferenced(indice, true); /*Setar o referenciado*/
 			this.virtualMemory.setModified(indice, true); /*Altera bit modificado*/
+			this.virtualMemory.setReferencedTime(indice, this.atual_time);
 		}
 	}
 
@@ -102,7 +108,10 @@ public class MemoryManager implements IClockListener {
 			/*Se o bit referenciado da página for 0 e sua idade for maior que o tempo definido no nosso algoritmo, então ela é a escolhida pra sair*/
 			if(virtualMemory.getPages().get(i).isReferenced() == false && (this.atual_time - virtualMemory.getPages().get(i).getReferencedTime()) > tempo){
 				value = phMemory.getPages().get(virtualMemory.getPages().get(i).getFrame());
-				HD[i] = value;
+				if(virtualMemory.getPages().get(i).isModified()){
+					HD[i] = value;
+				}
+			
 				phMemory.getPages().set(virtualMemory.getPages().get(i).getFrame(),null);
 				this.virtualMemory.clearPage(i);
 				valid = false;
@@ -125,7 +134,9 @@ public class MemoryManager implements IClockListener {
 		}
 
 		if(valid == true){
-			HD[temp] = value;
+			if(virtualMemory.getPages().get(i).isModified()){
+				HD[temp] = value;
+			}
 			phMemory.getPages().set(virtualMemory.getPages().get(temp).getFrame(),null);
 			this.virtualMemory.clearPage(temp);
 		}
@@ -136,7 +147,7 @@ public class MemoryManager implements IClockListener {
 public void receivedEvent(int tempo){
 	/*Recebe o sinal do clock e zera os bits*/
 
-	System.out.println("ROLA");
+	System.out.println("\n - Tick de Clock - \n");
 	for(VirtualPage vp : this.virtualMemory.getPages()){
 		vp.setReferenced(false);
 	}
