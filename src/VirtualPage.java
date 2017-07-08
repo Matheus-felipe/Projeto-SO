@@ -8,6 +8,15 @@ public class VirtualPage {
 	public boolean isReferenced() {
 		return referenced;
 	}
+	
+	public void clearPage(){
+		this.referenced = false;
+		this.modified = false;
+		this.present = false;
+		this.referencedTime = 0;
+		this.frame = 0;
+	}
+	
 	public void setReferenced(boolean pReferenced) {
 		this.referenced = pReferenced;
 	}

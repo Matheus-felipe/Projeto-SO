@@ -19,7 +19,7 @@ public class MemoryManager implements IClockListener {
 
 			if(this.phMemory.isFull()){
 				System.out.print("Memória cheia, chama o algoritmo");
-				return 1;/*mudar retorno*/
+				this.WSClock();
 			}
 
 			int valor = this.HD[indice];/*Pega valor do HD*/
@@ -49,7 +49,7 @@ public class MemoryManager implements IClockListener {
 			/*Verifica se memória física está cheia*/
 			if(this.phMemory.isFull()){
 				System.out.print("Memória cheia, chama o algoritmo");
-				//Quando tiver, chama 
+				this.WSClock();
 			}
 
 			int f = phMemory.setValue(valor);
@@ -71,38 +71,55 @@ public class MemoryManager implements IClockListener {
 	public void WSClock(){
 
 		int tempo = 10;
+		int idadeAtual = 0; /*Vai guardar tempo de referenciado da página que estiver sendo "apontada"*/
+		int idadeTemp = 0; /*Guarda o tempo da página mais antiga*/
 		int i = 0;
 		int value = 0;
 		int temp = 0;
 		boolean valid = false;
-		boolean valid2 = false;
-		
+
 		for(i = 0; i < this.virtualMemory.getPages().size();i++){
+			
+			/*Se a página que estiver sendo apontada no percorrimento não estiver presente ele vai para próxima*/
 			if(virtualMemory.getPages().get(i).isPresent() == false){
 				continue;
-			}
+			}	
 
+			/*Se ela estiver presente e tiver o bit referenciado em 1, então ela seta o tempo de referenciado da página para o tempo atual
+			 * e pega a posição dessa página como sendo temp 
+			 * */
 			if(virtualMemory.getPages().get(i).isReferenced() == true){
 				virtualMemory.getPages().get(i).setReferencedTime(this.atual_time); /*tempo do clock*/
+				idadeAtual = (this.atual_time - virtualMemory.getPages().get(i).getReferencedTime());
+				idadeTemp = (this.atual_time - virtualMemory.getPages().get(temp).getReferencedTime());
+				if(idadeAtual >= idadeTemp){
+					temp = i;
+					valid = true;
+					continue;
+				}
 			}
-
+			
+			/*Se o bit referenciado da página for 0 e sua idade for maior que o tempo definido no nosso algoritmo, então ela é a escolhida pra sair*/
 			if(virtualMemory.getPages().get(i).isReferenced() == false && (this.atual_time - virtualMemory.getPages().get(i).getReferencedTime()) > tempo){
 				value = phMemory.getPages().get(virtualMemory.getPages().get(i).getFrame());
 				HD[i] = value;
 				phMemory.getPages().set(virtualMemory.getPages().get(i).getFrame(),null);
+				this.virtualMemory.clearPage(i);
 				valid = false;
 				break;
 			}
-
+			
+			/*Se o bit referenciado for 0 e sua idade for menor ou igual ao tempo, ela é candidata a sair*/
 			if(virtualMemory.getPages().get(i).isReferenced() == false && (this.atual_time - virtualMemory.getPages().get(i).getReferencedTime()) <= tempo){
-				
-				int idade_atual = (this.atual_time - virtualMemory.getPages().get(i).getReferencedTime());
-				int idade_temp = (this.atual_time - virtualMemory.getPages().get(temp).getReferencedTime());
-				if(idade_atual >= idade_temp){
+
+				idadeAtual = (this.atual_time - virtualMemory.getPages().get(i).getReferencedTime());
+				idadeTemp = (this.atual_time - virtualMemory.getPages().get(temp).getReferencedTime());
+				if(idadeAtual >= idadeTemp){
 
 					temp = i;
 					valid = true;
-					
+					continue;
+
 				}
 			}
 		}
@@ -110,20 +127,21 @@ public class MemoryManager implements IClockListener {
 		if(valid == true){
 			HD[temp] = value;
 			phMemory.getPages().set(virtualMemory.getPages().get(temp).getFrame(),null);
+			this.virtualMemory.clearPage(temp);
 		}
 	}
-	
-	/*Método só é chamado quando o clock bater o tempo dele e pá*/
-	
-	public void receivedEvent(int tempo){
-		/*Recebe o sinal do clock e zera os bits*/
-		
-		System.out.println("ROLA");
-		for(VirtualPage vp : this.virtualMemory.getPages()){
-			vp.setReferenced(false);
-		}
-		/*Pega o tempo atual que vem do clock
-		 * */
-		this.atual_time = tempo;
-	}	
+
+/*Método só é chamado quando o clock bater o tempo dele e pá*/
+
+public void receivedEvent(int tempo){
+	/*Recebe o sinal do clock e zera os bits*/
+
+	System.out.println("ROLA");
+	for(VirtualPage vp : this.virtualMemory.getPages()){
+		vp.setReferenced(false);
+	}
+	/*Pega o tempo atual que vem do clock
+	 * */
+	this.atual_time = tempo;
+}	
 }

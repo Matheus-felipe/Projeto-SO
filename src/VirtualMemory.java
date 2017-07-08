@@ -37,6 +37,11 @@ public class VirtualMemory {
 		this.virtualPages.get(indice).setModified(pModified);
 	}
 	
+	public void clearPage(int indice){
+		this.virtualPages.get(indice).clearPage();
+		
+	}
+	
 	public ArrayList <VirtualPage> getPages(){
 		return this.virtualPages;
 	}
