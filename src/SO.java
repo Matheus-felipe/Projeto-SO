@@ -1,4 +1,4 @@
-import java.util.ArrayList;
+import java.io.File;
 
 public class SO {
 	public static final int CLOCK_TIME = 1000;
@@ -11,7 +11,9 @@ public class SO {
 		
 		VirtualMemory vm = new VirtualMemory(TAMANHO_MEMORIA_VIRTUAL);
 		PhysicalMemory ph = new PhysicalMemory(TAMANHO_MEMORIA_FISICA); 
-		int[] hd = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16}; 
+		File hd = new File("C:/Users/matheus/Desktop/HD.txt");
+		
+		//int[] hd = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16}; 
 		Clock c = new Clock(CLOCK_TIME);
 		Log log = new Log(vm, ph, hd, LOG_TIME);
 		

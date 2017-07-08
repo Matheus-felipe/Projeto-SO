@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.util.Random;
 
 public class Process implements Runnable{
@@ -20,7 +21,11 @@ public class Process implements Runnable{
 				if(op[i].charAt(2) == 'R'){
 					System.out.println("Processo " + this.id + " leu do endereço " + (Character.getNumericValue(op[i].charAt(0))));
 					synchronized (this.mm) {
-						mm.readMemory((Character.getNumericValue(op[i].charAt(0)))); 
+						try {
+							mm.readMemory((Character.getNumericValue(op[i].charAt(0))));
+						} catch (IOException e) {
+							e.printStackTrace();
+						} 
 					}
 				}
 
@@ -32,7 +37,11 @@ public class Process implements Runnable{
 							+ " no endereço " 
 							+ (Character.getNumericValue(op[i].charAt(0))));
 					synchronized (this.mm) {
-						mm.writeMemory((Character.getNumericValue(op[i].charAt(0))), valor);
+						try {
+							mm.writeMemory((Character.getNumericValue(op[i].charAt(0))), valor);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
 					}
 					
 				}
