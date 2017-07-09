@@ -38,10 +38,8 @@ public class MemoryManager implements IClockListener {
 			BufferedReader br = new BufferedReader(isr);
 			String s = br.readLine();
 			String[] arqLine = s.split(" ");
-
 			
-			
-			int valor = Character.getNumericValue(arqLine[indice].charAt(0));/*Pega valor do HD*/
+			int valor = Integer.parseInt(arqLine[indice]);/*Pega valor do HD*/
 			System.out.println("Rola :" + valor);
 			int f = phMemory.setValue(valor); /*Coloca valor na memória física e retorna o indice livre*/
 			br.close(); /*Fechar conexão*/
