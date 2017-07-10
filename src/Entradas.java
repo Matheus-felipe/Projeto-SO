@@ -13,7 +13,7 @@ public class Entradas {
 		Random r = new Random();
 		this.seed = r.nextInt(tamanhoMemoria);
 		System.out.println("Semente = " + seed);
-		if(tamanhoMemoria < 10) {
+		if(tamanhoMemoria < 2) {
 			throw new IllegalArgumentException("Memória muito pequena - valor mínimo 10");
 		}
 		if(tamanhoMemoria > 40) {

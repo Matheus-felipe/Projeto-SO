@@ -2,25 +2,27 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
 
 public class MemoryManager implements IClockListener {
 	private VirtualMemory virtualMemory;
 	private PhysicalMemory phMemory;
-	private int atual_time;
+	private int atual_time, teste;
 	private File HD; 
+	private String nome;
 
 	public MemoryManager(VirtualMemory vp, PhysicalMemory pPH, File pHd){
 		this.virtualMemory = vp;
 		this.phMemory = pPH;
 		this.HD = pHd;
+		this.nome = this.HD.getAbsolutePath();
 	}
 
 	public int readMemory(int indice) throws IOException{
@@ -29,20 +31,22 @@ public class MemoryManager implements IClockListener {
 			System.out.println("Falta de página!!!");
 
 			if(this.phMemory.isFull()){
-				System.out.print("Memória cheia, chama o algoritmo");
+				System.out.print("Memória cheia, chama o algoritmo\n");
 				this.WSClock();
 			}
-
-			InputStream is = new FileInputStream(HD.getAbsolutePath());
-			InputStreamReader isr = new InputStreamReader(is);
-			BufferedReader br = new BufferedReader(isr);
+			
+			FileReader fr = new FileReader(this.HD);
+			BufferedReader br = new BufferedReader(fr);
 			String s = br.readLine();
+			System.out.println("Arquivo: " + s);
 			String[] arqLine = s.split(" ");
 			
+			
+			br.close(); // Fechar conexão
+			
 			int valor = Integer.parseInt(arqLine[indice]);/*Pega valor do HD*/
-			System.out.println("Rola :" + valor);
 			int f = phMemory.setValue(valor); /*Coloca valor na memória física e retorna o indice livre*/
-			br.close(); /*Fechar conexão*/
+			
 
 			/*Troca os bits*/
 			this.virtualMemory.setReferenced(indice, true);
@@ -68,7 +72,7 @@ public class MemoryManager implements IClockListener {
 
 			/*Verifica se memória física está cheia*/
 			if(this.phMemory.isFull()){
-				System.out.print("Memória cheia, chama o algoritmo");
+				System.out.print("Memória cheia, chama o algoritmo\n");
 				this.WSClock();
 			}
 
@@ -93,7 +97,8 @@ public class MemoryManager implements IClockListener {
 	}
 
 	public void WSClock() throws IOException{
-
+		++teste;
+		System.out.println("       > CHAMOOOU " + teste);
 		int tempo = 10;
 		int idadeAtual = 0; /*Vai guardar tempo de referenciado da página que estiver sendo "apontada"*/
 		int idadeTemp = 0; /*Guarda o tempo da página mais antiga*/
@@ -102,21 +107,19 @@ public class MemoryManager implements IClockListener {
 		int temp = 0;
 		boolean valid = false;
 
-		/*Writer*/
-
-		OutputStream os = new FileOutputStream(this.HD.getAbsolutePath());
-		OutputStreamWriter osw = new OutputStreamWriter(os);
-		BufferedWriter bw = new BufferedWriter(osw);
-
 		/*Reader*/
 
-		InputStream is = new FileInputStream(HD.getAbsolutePath());
-		InputStreamReader isr = new InputStreamReader(is);
-		BufferedReader br = new BufferedReader(isr);
+		FileReader fr = new FileReader(this.HD);
+		BufferedReader br = new BufferedReader(fr);
 		String s = br.readLine();
+		br.close(); /*Fecha conexão*/
 		String[] arqLine = s.split(" ");
+		
+		/*Writer*/
 
-	
+		FileWriter fw = new FileWriter(this.HD, false);
+		BufferedWriter bw = new BufferedWriter(fw);
+		
 		for(i = 0; i < this.virtualMemory.getPages().size();i++){
 			
 			/*Se a página que estiver sendo apontada no percorrimento não estiver presente ele vai para próxima*/
@@ -134,23 +137,26 @@ public class MemoryManager implements IClockListener {
 				if(idadeAtual >= idadeTemp){
 					temp = i;
 					valid = true;
-					continue;
 				}
+				continue;
 			}
 
 			/*Se o bit referenciado da página for 0 e sua idade for maior que o tempo definido no nosso algoritmo, então ela é a escolhida pra sair*/
 			if(virtualMemory.getPages().get(i).isReferenced() == false && (this.atual_time - virtualMemory.getPages().get(i).getReferencedTime()) > tempo){
-				value = phMemory.getPages().get(virtualMemory.getPages().get(i).getFrame());
+				value = phMemory.getPages().get(virtualMemory.getPages().get(i).getFrame()); /*Pega o valor da página física que irá ser retirada*/
+				
 				if(virtualMemory.getPages().get(i).isModified()){
 					Integer v = new Integer(value);
 					arqLine[i] = v.toString();
+					System.out.println("GRAVAAAAR: " + arqLine[0] + arqLine[1]);
 					
-					for(int j = 0; i < arqLine.length; i++){
-						bw.write(arqLine[i]);
-					}
+					/*for(int j = 0; j < arqLine.length; j++){
+						bw.write(arqLine[j]);
+						bw.write(" ");
+					}*/
 				}
 
-				phMemory.getPages().set(virtualMemory.getPages().get(i).getFrame(),null);
+				this.phMemory.getPages().set(virtualMemory.getPages().get(i).getFrame(),null);
 				this.virtualMemory.clearPage(i);
 				valid = false;
 				break;
@@ -165,26 +171,33 @@ public class MemoryManager implements IClockListener {
 
 					temp = i;
 					valid = true;
-					continue;
-
 				}
+				continue;
 			}
 		}
 
 		if(valid == true){
-			if(virtualMemory.getPages().get(i).isModified()){
+			if(virtualMemory.getPages().get(temp).isModified()){
+				value = phMemory.getPages().get(virtualMemory.getPages().get(temp).getFrame());
 				Integer v = new Integer(value);
-				arqLine[i] = v.toString();
+				arqLine[temp] = v.toString();
 				
-				for(int j = 0; i < arqLine.length; i++){
-					bw.write(arqLine[temp]);
-				}
+				/*for(int j = 0; j < arqLine.length; j++){
+					bw.write(arqLine[j]);
+					bw.write(" ");
+				}*/
 			}
+			
 			phMemory.getPages().set(virtualMemory.getPages().get(temp).getFrame(),null);
 			this.virtualMemory.clearPage(temp);
 		}
 		
-		br.close();
+		for (int z = 0; z < arqLine.length; ++z) {
+			System.out.println("Tô colocando isso: " + arqLine[z]);
+			bw.write(arqLine[z]);
+			bw.write(" ");
+		}
+
 		bw.close();
 	}
 

@@ -2,6 +2,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -32,24 +33,19 @@ public class Log implements Runnable {
 			System.out.println(ph.getPages());
 
 			/*Imprime HD*/
-			InputStream is;
+			FileReader fr;
 			try {
-				is = new FileInputStream(HD.getAbsolutePath());
-				InputStreamReader isr = new InputStreamReader(is);
-				BufferedReader br = new BufferedReader(isr);
-				String s;
-				try {
-					s = br.readLine();
-					System.out.println(s);
-					br.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-
-
+				fr = new FileReader(this.HD);
+				BufferedReader br = new BufferedReader(fr);
+				String s = br.readLine();
+				br.close(); /*Fecha conexão*/
+				System.out.println("[ " + s + "]");
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
+			
 
 			/*Imprime Memória Virtual e seus atributos*/
 			for(int i = 0; i < this.vm.getPages().size(); i++){
